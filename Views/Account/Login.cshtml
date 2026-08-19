@@ -1,0 +1,154 @@
+﻿@model PlayerCards.Models.Login
+
+@{
+    ViewData["Title"] = "Login";
+}
+
+<style>
+    /* Container centering */
+    .login-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 80px); /* adjust since navbar exists */
+        background: #f7f8fa;
+        padding: 20px;
+    }
+
+    /* Card style */
+    .login-card {
+        background: #fff;
+        padding: 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        max-width: 420px;
+        width: 100%;
+    }
+
+        .login-card h1 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .login-card hr {
+            margin: 1rem 0 2rem;
+            border: none;
+            border-top: 1px solid #e0e0e0;
+        }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    label {
+        font-weight: 600;
+        margin-bottom: 0.4rem;
+        display: block;
+        color: #555;
+    }
+
+    input.form-control {
+        border-radius: 10px;
+        padding: 10px 14px;
+        border: 1px solid #d1d1d1;
+        font-size: 1rem;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+        input.form-control:focus {
+            border-color: #4e73df;
+            box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.2);
+            outline: none;
+        }
+
+    .btn-primary {
+        background: #4e73df;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 12px;
+        width: 100%;
+        font-size: 1.1rem;
+        transition: background 0.3s, transform 0.2s;
+    }
+
+        .btn-primary:hover {
+            background: #3b5dc7;
+            transform: translateY(-2px);
+        }
+
+    /* Bottom link */
+    .login-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        font-size: 0.95rem;
+        color: #666;
+    }
+
+        .login-footer a {
+            margin-left: 5px;
+            color: #4e73df;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+            .login-footer a:hover {
+                text-decoration: underline;
+            }
+</style>
+
+<div class="login-wrapper">
+    <div class="login-card">
+        <h1>Login</h1>
+        <hr />
+        <form asp-action="Login" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="UserNameOrEmail" class="control-label"></label>
+                <input asp-for="UserNameOrEmail" class="form-control" />
+                <span asp-validation-for="UserNameOrEmail" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password" class="control-label"></label>
+                <input asp-for="Password" class="form-control" type="password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Login" class="btn btn-primary" />
+            </div>
+            @Html.AntiForgeryToken()
+        </form>
+
+        <div class="login-footer">
+            <a asp-controller="Account" asp-action="ForgotPassword">Forgot Password?</a>
+            <br />
+
+
+            Don't Have An Account?
+            <a asp-action="Registration">Go to Registration</a>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Small animation effect when page loads
+        document.addEventListener("DOMContentLoaded", () => {
+            const card = document.querySelector(".login-card");
+            card.style.opacity = 0;
+            card.style.transform = "translateY(20px)";
+            setTimeout(() => {
+                card.style.transition = "all 0.6s ease";
+                card.style.opacity = 1;
+                card.style.transform = "translateY(0)";
+            }, 100);
+        });
+    </script>
+}

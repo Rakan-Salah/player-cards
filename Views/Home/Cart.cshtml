@@ -1,0 +1,123 @@
+﻿@model List<PlayerCards.Models.PlayerCard>
+
+@{
+    ViewData["Title"] = "Your Cart";
+    decimal total = (decimal) Model.Sum(c => c.Price);
+}
+
+<style>
+    .card-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .player-card {
+        background-color: white;
+        color: black;
+        padding: 20px;
+        border-radius: 10px;
+        width: 250px;
+        min-height: 420px;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+        .player-card img {
+            width: 150px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 50% / 40%;
+            margin-bottom: 10px;
+            border: 2px solid #7494ec;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .player-card h3 {
+            margin-bottom: 10px;
+        }
+
+        .player-card p {
+            margin: 5px 0;
+        }
+
+        .player-card form {
+            display: inline;
+        }
+
+    .top-button {
+        display: inline-block;
+        margin: 10px;
+        padding: 10px 20px;
+        background-color: #7494ec;
+        color: white;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        text-align: center;
+        text-decoration: none;
+    }
+
+        .top-button:hover {
+            background-color: #0056b3;
+        }
+
+    .player-card button {
+        margin: 5px 3px;
+        background-color: #7494ec;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 5px;
+        color: white;
+        cursor: pointer;
+    }
+
+        .player-card button:hover {
+            background-color: #0056b3;
+        }
+    .cart-summary {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        margin: 20px auto;
+        max-width: 300px;
+    }
+</style>
+
+<div style="text-align: center; margin-bottom: 20px;">
+    <a class="top-button" asp-action="Index">← Back to All Cards</a>
+    <a class="top-button" asp-action="Liked">View Liked ❤️</a>
+</div>
+
+<h2 style="text-align: center; color: black;"> Your Shopping Cart 🛒</h2>
+
+<div class="card-container">
+    @if (Model.Any())
+    {
+        @foreach (var card in Model)
+        {
+            @await Html.PartialAsync("_PlayerCard", card)
+        }
+    }
+    else
+    {
+        <div class="player-card">
+            <h3>Your cart is empty</h3>
+            <p>You haven't added any items to your cart yet</p>
+            <a asp-action="Index"><button>Browse Cards</button></a>
+        </div>
+    }
+</div>
+
+@if (Model.Any())
+{
+    <div class="cart-summary">
+        <h3>Cart Summary</h3>
+        <p><strong>Total Items:</strong> @Model.Count</p>
+        <p><strong>Total Price:</strong> @total JD</p>
+        <button class="top-button" style="background-color: #4CAF50;">Proceed to Checkout</button>
+    </div>
+}

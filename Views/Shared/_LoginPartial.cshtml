@@ -1,0 +1,185 @@
+﻿@* Check if the user is logged in *@
+@if (Context.User.Identity.IsAuthenticated)
+{
+    <div class="e-user-dropdown">
+
+        @* The Menu Button (Hamburger Icon) *@
+        <button class="e-user-menu-btn" onclick="toggleUserMenu()">
+            <i class="fa-solid fa-bars"></i> @* The three lines *@
+        </button>
+
+        @* The Dropdown Content *@
+        <div class="e-user-menu-content" id="userDropdownMenu">
+            <div class="user-info">
+                @* Use the User's Name or Email here *@
+                <p class="user-name">Hello, <strong>@Context.User.Identity.Name!</strong></p>
+            </div>
+
+            <a asp-controller="Account" asp-action="Settings" class="menu-item">
+                <i class="fa-solid fa-cog"></i> Account Settings
+            </a>
+
+            @* Example Suggestions *@
+            <a asp-controller="Home" asp-action="Liked" class="menu-item">
+                <i class="fa-solid fa-heart"></i> My Wishlist
+            </a>
+            <a asp-controller="Home" asp-action="Cart" class="menu-item">
+                <i class="fa-solid fa-shopping-cart"></i> My Cart
+            </a>
+
+            @* Conditional Link for Admin Users *@
+            @if (User.IsInRole("SuperAdmin"))
+            {
+                <a asp-controller="Home" asp-action="AssignTags" class="menu-item admin-link">
+                    <i class="fa-solid fa-tag"></i> Admin: Assign Tags
+                </a>
+            }
+
+            <hr />
+
+            @* Logout Button (Must be a form submit) *@
+            <form asp-controller="Account" asp-action="LogOut" method="post" style="margin: 0;">
+                <button type="submit" class="menu-item logout-btn">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out
+                </button>
+            </form>
+        </div>
+    </div>
+}
+else
+{
+    <ul class="nav navbar-nav navbar-right" style="list-style: none; display: flex; gap: 15px; margin: 0; padding: 0;">
+        <li>
+            <a class="nav-link text-dark" asp-controller="Account" asp-action="Registration">Register</a>
+        </li>
+        <li>
+            <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Log in</a>
+        </li>
+    </ul>
+}
+
+@* STYLES & SCRIPT
+    These are now self-contained. Place this entire block in your _Layout.cshtml 
+    or _LoginPartial.cshtml where the old code was.
+*@
+
+<style>
+    /* --- USER DROPDOWN MENU STYLES --- */
+    .e-user-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .e-user-menu-btn {
+        background: none;
+        border: none;
+        padding: 10px 15px;
+        font-size: 18px;
+        color: #333; /* Dark color for the icon */
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background-color 0.2s, color 0.2s;
+    }
+
+        .e-user-menu-btn:hover {
+            background-color: #f0f0f0;
+            color: #E83F6F; /* Highlight color */
+        }
+
+    .e-user-menu-content {
+        display: none; /* Initially hidden */
+        position: absolute;
+        top: 100%;
+        right: 0; /* ALIGNS TO THE RIGHT */
+        z-index: 1000;
+        background-color: #fff;
+        min-width: 240px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        padding: 10px 0;
+    }
+
+        .e-user-menu-content.show {
+            display: block;
+        }
+
+        .e-user-menu-content .user-info {
+            padding: 5px 15px 10px 15px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 5px;
+        }
+
+        .e-user-menu-content .user-name {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: #222;
+        }
+
+        .e-user-menu-content .menu-item,
+        .e-user-menu-content .logout-btn {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 10px 15px;
+            text-align: left;
+            text-decoration: none;
+            color: #555;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+            .e-user-menu-content .menu-item i,
+            .e-user-menu-content .logout-btn i {
+                margin-right: 10px;
+                min-width: 16px;
+                color: #888;
+            }
+
+            .e-user-menu-content .menu-item:hover,
+            .e-user-menu-content .logout-btn:hover {
+                background-color: #E83F6F; /* Highlight the entire row */
+                color: white;
+            }
+
+                .e-user-menu-content .menu-item:hover i,
+                .e-user-menu-content .logout-btn:hover i {
+                    color: white;
+                }
+
+        .e-user-menu-content hr {
+            border: 0;
+            height: 1px;
+            background-color: #eee;
+            margin: 5px 0;
+        }
+</style>
+
+<script>
+    // This function must be accessible in the global scope for 'onclick' to find it.
+    function toggleUserMenu() {
+        const menu = document.getElementById('userDropdownMenu');
+        if (menu) {
+            menu.classList.toggle('show');
+        }
+    }
+
+    // This part closes the menu if you click anywhere else on the page
+    window.onclick = function(event) {
+        // Check if the click was outside the menu button
+        if (!event.target.matches('.e-user-menu-btn') && !event.target.closest('.e-user-menu-btn')) {
+            const dropdowns = document.getElementsByClassName("e-user-menu-content");
+            for (let i = 0; i < dropdowns.length; i++) {
+                const openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show')) {
+                    openDropdown.classList.remove('show');
+                }
+            }
+        }
+    }
+</script>

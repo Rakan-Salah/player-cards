@@ -1,0 +1,65 @@
+﻿@model PlayerCards.Models.PlayerCategory
+
+@{
+    ViewData["Title"] = "Create Category";
+}
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="category-card" style="width: 400px; padding: 30px;">
+        <h3 class="category-name text-center mb-4">Create New Category</h3>
+
+        <form asp-action="Create" method="post">
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label fw-semibold" style="color: #333;">Category Name</label>
+                <input asp-for="Name" class="form-control" style="border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);" />
+                <span asp-validation-for="Name" class="text-danger mt-1 d-block"></span>
+            </div>
+
+            <button type="submit" class="create-btn w-100 mt-3">Save Category</button>
+        </form>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #f7f8fa;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .category-card {
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .category-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.1);
+        }
+
+    .category-name {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .create-btn {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-weight: 500;
+        border: none;
+        transition: all 0.2s ease;
+    }
+
+        .create-btn:hover {
+            background-color: #0056b3;
+        }
+
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    }
+</style>

@@ -1,0 +1,200 @@
+﻿@model PlayerCards.Models.PlayerCard
+
+@{
+    ViewData["Title"] = "Create or Edit Player";
+}
+
+<!-- Select2 CSS (remove if added in _Layout) -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<style>
+    h2 {
+        text-align: center;
+    }
+
+    body {
+        background-color: #f4f4f6;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #333;
+        margin: 0;
+        padding: 0;
+    }
+
+    .form-container {
+        background-color: #ffffff;
+        padding: 40px 35px;
+        border-radius: 16px;
+        width: 420px;
+        margin: 80px auto;
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    input[type="text"], textarea, input[type="number"], select, input[type="file"] {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        background-color: #f9f9f9;
+        color: #333;
+        font-size: 15px;
+        transition: border 0.3s ease, background-color 0.3s ease;
+    }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: #7494ec;
+            background-color: #fff;
+            outline: none;
+        }
+
+    textarea {
+        resize: none;
+        height: 100px;
+    }
+
+    .upload-container {
+        width: 100%;
+        border: 2px dashed #ccc;
+        border-radius: 10px;
+        background-color: #fafafa;
+        text-align: center;
+        cursor: pointer;
+        color: #666;
+        font-weight: 500;
+        transition: border-color 0.3s ease, background-color 0.3s ease;
+        margin-bottom: 20px;
+        padding: 25px 0;
+    }
+
+        .upload-container:hover {
+            border-color: #7494ec;
+            background-color: #f1f4fe;
+        }
+
+        .upload-container input[type="file"] {
+            display: none;
+        }
+
+    button {
+        width: 100%;
+        padding: 14px;
+        background-color: #7494ec;
+        color: #fff;
+        font-size: 16px;
+        font-weight: 600;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+
+        button:hover {
+            background-color: #5a7be3;
+        }
+
+    /* Select2 width fix inside small form */
+    .select2-container {
+        width: 100% !important;
+    }
+
+    /* tag badges (optional in case you want to show selected tags elsewhere) */
+    .tag-badge {
+        display: inline-block;
+        padding: 6px 10px;
+        background: #e8f0ff;
+        color: #1b3a8a;
+        border-radius: 999px;
+        margin: 3px 3px 0 0;
+        font-size: 13px;
+    }
+</style>
+
+<div class="form-container">
+    <h2>Create or Edit Item</h2>
+
+    <form asp-action="Create" asp-controller="Home" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" name="Id" value="@Model.Id" />
+
+        <input type="text" name="Name" value="@Model.Name" placeholder="Enter Item name" required />
+        <textarea name="Description" placeholder="Enter Item description" required>@Model.Description</textarea>
+
+        <!-- Category Dropdown -->
+        <div class="form-group">
+            <label for="CategoryId">Select Category</label>
+            <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="filter-select">
+                <option value="">-- Select a Category --</option>
+            </select>
+        </div>
+
+        <!-- Tags Select (matches AssignTags.cshtml design and behavior) -->
+        <div class="form-group" style="flex:1; min-width:300px;">
+            <label for="tagsSelect">Select or Create Tags</label>
+            <select id="tagsSelect" name="selectedTags" multiple="multiple" class="form-control">
+                @foreach (var t in ViewBag.Tags as List<PlayerCards.Models.Tag>)
+                {
+                    <option value="@t.Name">@t.Name</option>
+                }
+            </select>
+            <small style="color:#666;">Type to create new tags or select existing. Click the 'x' to remove.</small>
+        </div>
+
+
+
+        <!-- Image Upload -->
+        <label class="upload-container" for="imageFile">
+            <p>Click to upload an image</p>
+            <input type="file" id="imageFile" name="imageFile" accept="image/*" />
+        </label>
+        <p id="fileName" style="text-align:center; color:#555;"></p>
+
+        <input type="number" name="Price" value="@Model.Price" placeholder="Enter price" />
+
+        <button type="submit">Save Item</button>
+    </form>
+</div>
+
+<!-- jQuery + Select2 (remove if added in _Layout) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    // file input display
+    const fileInput = document.getElementById('imageFile');
+    const fileNameDisplay = document.getElementById('fileName');
+
+    fileInput.addEventListener('change', function () {
+        fileNameDisplay.textContent = this.files.length > 0 ? `Selected: ${this.files[0].name}` : '';
+    });
+
+    // initialize Select2 tags input
+    $(document).ready(function () {
+        $('#tagsSelect').select2({
+            tags: true,
+            tokenSeparators: [','],
+            placeholder: "Select or type tags",
+            width: '100%'
+        });
+
+        // If editing and the model has tags, pre-select them.
+        @* If you passed selected tag names via ViewBag.SelectedTagNames, preselect them *@
+        @if (ViewBag.SelectedTagNames != null)
+        {
+                <text>
+                var existing = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.SelectedTagNames));
+                $('#tagsSelect').val(existing).trigger('change');
+                </text>
+        }
+    });
+
+
+      $(document).ready(function () {
+        $('#tagsSelect').select2({
+            tags: true,
+            width: '100%',
+            placeholder: 'Select or type tags',
+            tokenSeparators: [',', ' '],
+        });
+    });
+</script>

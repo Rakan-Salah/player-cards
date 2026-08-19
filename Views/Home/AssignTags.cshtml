@@ -1,0 +1,208 @@
+﻿@{
+    ViewData["Title"] = "Assign Tags to Player Cards";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<style>
+    body {
+        background: #f5f6fa;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        color: #333;
+    }
+
+    .assign-wrap {
+        max-width: 900px;
+        margin: 40px auto;
+        background: #fff;
+        padding: 30px 40px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        transition: box-shadow 0.2s ease;
+    }
+
+        .assign-wrap:hover {
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+        }
+
+    h3 {
+        font-weight: 600;
+        margin-bottom: 25px;
+        text-align: center;
+        color: #444;
+    }
+
+    label {
+        font-weight: 500;
+        color: #555;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .controls {
+        display: flex;
+        gap: 18px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+
+        .controls > div {
+            flex: 1;
+            min-width: 300px;
+        }
+
+    select.form-control {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 8px;
+        background: #fafafa;
+        color: #333;
+        transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+        select.form-control:focus {
+            border-color: #888;
+            background: #fff;
+            outline: none;
+        }
+
+    /* Select2 base styling */
+    .select2-container--default .select2-selection--multiple {
+        background-color: #fafafa;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 5px;
+        min-height: 42px;
+        transition: all 0.2s ease;
+    }
+
+        .select2-container--default .select2-selection--multiple:hover {
+            border-color: #bbb;
+            background-color: #fff;
+        }
+
+    /* Tag (choice) styling */
+    .select2-selection__choice {
+        background: #f3f4f6 !important;
+        color: #333 !important;
+        border-radius: 20px !important;
+        border: 1px solid #ddd !important;
+        padding: 4px 10px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        font-size: 14px !important;
+        margin-top: 5px !important;
+        margin-right: 5px !important;
+        transition: background 0.2s ease;
+    }
+
+        .select2-selection__choice:hover {
+            background: #e5e7eb !important;
+        }
+
+    /* The '×' remove icon styling */
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        display: inline-block !important;
+        position: relative !important;
+        left: 0 !important;
+        color: #666 !important;
+        font-weight: bold;
+        font-size: 16px !important;
+        cursor: pointer !important;
+        line-height: 1 !important;
+        margin-right: 4px !important;
+    }
+
+        
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+            color: #ff4d4d !important;
+        }
+
+    /* Apply button styling */
+    .submit-btn {
+        background: linear-gradient(135deg, #5A67D8, #667EEA);
+        color: white;
+        padding: 12px 26px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+        box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+        align-self: center;
+        margin-left: 160px;
+    }
+
+        .submit-btn:hover {
+            background: linear-gradient(135deg, #4C51BF, #5A67D8);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(102, 126, 234, 0.4);
+        }
+
+    p {
+        color: #777;
+        font-size: 14px;
+        margin-top: 10px;
+        text-align: center;
+    }
+
+</style>
+
+
+<div class="assign-wrap">
+    <h3>Assign Tags to Player Cards</h3>
+
+    <form asp-action="AssignTags" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="controls">
+            <div style="flex:1; min-width:300px;">
+                <label>Select Player Cards</label>
+                <select id="cardsSelect" name="selectedCards" multiple="multiple" class="form-control">
+                    @foreach (var c in ViewBag.Cards as List<PlayerCards.Models.PlayerCard>)
+                    {
+                        <option value="@c.Id">@c.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div style="flex:1; min-width:300px;">
+                <label>Select or Create Tags</label>
+                <select id="tagsSelect" name="selectedTags" multiple="multiple" class="form-control">
+                    @foreach (var t in ViewBag.Tags as List<PlayerCards.Models.Tag>)
+                    {
+                        <option value="@t.Name">@t.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div style="align-self:flex-end;">
+                <button type="submit" class="submit-btn">Apply</button>
+            </div>
+        </div>
+
+        <p>Select multiple cards and then add/select tags. New tags typed here will be created.</p>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#cardsSelect').select2({
+            placeholder: "Choose player cards",
+            width: '100%'
+        });
+
+        $('#tagsSelect').select2({
+            tags: true,
+            tokenSeparators: [','],
+            placeholder: "Select or type tags",
+            width: '100%',
+            closeOnSelect: false
+        });
+    });
+</script>

@@ -1,0 +1,110 @@
+﻿@using PlayerCards.Entities
+@{
+    ViewData["Title"] = "User Dashboard";
+    var announcements = ViewBag.Announcements as List<UserAnnouncement> ?? new List<UserAnnouncement>();
+}
+
+<h2 class="fw-semibold mb-2 text-dark">Welcome to your Dashboard</h2>
+<p class="text-secondary mb-4">This is your personal area as a regular user.</p>
+
+@if (announcements.Any())
+{
+    foreach (var ua in announcements)
+    {
+        <div class="modal fade announcement-modal" id="announcementModal-@ua.Id" tabindex="-1" aria-hidden="true" data-ann-id="@ua.Id">
+            <div class="modal-dialog modal-md modal-dialog-centered">
+                <!-- smaller width -->
+                <div class="modal-content border-0 rounded-4 shadow-lg bg-white">
+
+                    <!-- Title -->
+                    <div class="modal-header border-0 pb-0">
+                        <div class="w-100 text-center">
+                            <h5 class="fw-semibold text-dark mb-1">@ua.Announcement?.Title</h5>
+                            @if (ua.Announcement != null)
+                            {
+                                <div class="small text-muted">
+                                    @ua.Announcement.CreatedAt.ToString("MMMM dd, yyyy")
+                                </div>
+                            }
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="modal-body pt-2 pb-4 px-4 text-secondary" style="font-size: 0.95rem;">
+                        <div class="announcement-content bg-light p-3 rounded-3">
+                            @Html.Raw(ua.Announcement?.Content ?? "")
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="modal-footer border-0 pt-0 justify-content-center">
+                        <button type="button" class="btn btn-light rounded-3 px-4 shadow-sm" data-bs-dismiss="modal">
+                            <i class="bi bi-check2-circle me-1"></i> Got it
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (typeof bootstrap === 'undefined') {
+                console.error("Bootstrap is not loaded.");
+                return;
+            }
+
+            const modals = Array.from(document.querySelectorAll('.announcement-modal'));
+            let index = 0;
+
+            function showNext() {
+                if (index >= modals.length) return;
+                const el = modals[index];
+                const bsModal = new bootstrap.Modal(el);
+                bsModal.show();
+
+                el.addEventListener('hidden.bs.modal', function handler() {
+                    el.removeEventListener('hidden.bs.modal', handler);
+                    index++;
+                    showNext();
+                });
+            }
+
+            showNext();
+        });
+    </script>
+}
+
+<style>
+    /* Modal animation */
+    .modal-content {
+        animation: fadeInScale 0.25s ease-in-out;
+    }
+
+    /* Announcement content styling */
+    .announcement-content p {
+        margin-bottom: 0.75rem;
+        line-height: 1.6;
+    }
+
+    .announcement-content h1,
+    .announcement-content h2,
+    .announcement-content h3 {
+        margin-top: 0.75rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .announcement-content img {
+        max-width: 100%;
+        border-radius: 8px;
+        margin: 10px 0;
+    }
+
+    .modal-dialog {
+        max-width: 550px; /* keeps modal compact */
+    }
+</style>

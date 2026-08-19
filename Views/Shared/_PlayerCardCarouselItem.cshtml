@@ -1,0 +1,52 @@
+﻿@model PlayerCards.Models.PlayerCard
+
+@{
+    // The database provides the full relative path (e.g., /images/guid.webp), so use it directly.
+    string? displayedTag = Model.Tags?
+                                .FirstOrDefault()?
+                                .Name;
+}
+
+<div class="player-card">
+
+    @* --- CUSTOM TAG IMPLEMENTATION (Top Right) --- *@
+    @if (Model.Tags != null && Model.Tags.Any())
+{
+    foreach (var tag in Model.Tags)
+    {
+        <div class="product-custom-tag">@tag.Name.ToUpper()</div>
+    }
+}
+
+    @* --- LOVE BUTTON (Top Left) --- *@
+    <form class="love-form" data-id="@Model.Id">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="love-btn @(Model.Isliked ? "liked" : "")" title="@(Model.Isliked ? "Unlike" : "Like")">
+            <i class="fa-solid fa-heart"></i>
+        </button>
+    </form>
+
+    @* --- SUPERADMIN EDIT / DELETE ICONS (Bottom Right) --- *@ @if (ViewBag.IsSuperAdmin == true) {
+    <div class="admin-icons" style="position: absolute; bottom: 5px; right: 5px; display: flex; gap: 5px;"> <a asp-action="Create" asp-route-id="@Model.Id" title="Edit"> <i class="fa-solid fa-pen-to-square" style="color:#fff; background:#007bff; padding:5px; border-radius:5px;"></i> </a> <form asp-action="Delete" method="post" onsubmit="return confirm('Are you sure?');"> @Html.AntiForgeryToken() <input type="hidden" name="id" value="@Model.Id" /> <button type="submit" style="border:none; background:none; padding:0;" title="Delete"> <i class="fa-solid fa-trash" style="color:#fff; background:#dc3545; padding:5px; border-radius:5px;"></i> </button> </form> </div>
+        }
+    @* --- ENTIRE CARD IS CLICKABLE --- *@
+    <a asp-action="Detail" asp-controller="Product" asp-route-id="@Model.Id" style="text-decoration: none; color: inherit;">
+
+        <div class="image-container">
+            @* Use Model.ImagePath directly as it contains the full relative path like /images/guid.webp *@
+            <img src="@Model.ImagePath" alt="@Model.Name" onerror="this.onerror=null; this.src='/images/placeholder.jpg';" />
+        </div>
+
+        <div class="product-details">
+            @* Category/Team Name *@
+            <div style="font-size: 12px; color: #888;">@Model.CategoryLink?.Name</div>
+
+
+            @* Product Title *@
+            <h4>@Model.Name</h4>
+
+            @* Price *@
+            <div class="price">@(Model.Price.HasValue? Model.Price.Value.ToString("0.00€") : "Price Not Set")</div>
+        </div>
+    </a>
+</div>

@@ -1,0 +1,194 @@
+﻿@model PlayerCards.Entities.UserAccount
+
+@{
+    ViewData["Title"] = "Create A New User";
+}
+
+<style>
+    /* Center wrapper */
+    .create-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 80px); /* adjust for navbar */
+        background: #f7f8fa;
+        padding: 20px;
+    }
+
+    /* Card style */
+    .create-card {
+        background: #fff;
+        padding: 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        max-width: 500px;
+        width: 100%;
+    }
+
+        .create-card h1 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .create-card hr {
+            margin: 1rem 0 2rem;
+            border: none;
+            border-top: 1px solid #e0e0e0;
+        }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    label {
+        font-weight: 600;
+        margin-bottom: 0.4rem;
+        display: block;
+        color: #555;
+    }
+
+    input.form-control {
+        border-radius: 10px;
+        padding: 10px 14px;
+        border: 1px solid #d1d1d1;
+        font-size: 1rem;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+        input.form-control:focus {
+            border-color: #4e73df;
+            box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.2);
+            outline: none;
+        }
+
+    /* File input styling */
+    input[type="file"].form-control {
+        padding: 6px;
+    }
+
+    .btn-primary {
+        background: #4e73df;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 12px;
+        width: 100%;
+        font-size: 1.1rem;
+        transition: background 0.3s, transform 0.2s;
+    }
+
+        .btn-primary:hover {
+            background: #3b5dc7;
+            transform: translateY(-2px);
+        }
+
+    /* Success message */
+    .success-message {
+        color: green;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    /* Bottom link */
+    .create-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        font-size: 0.95rem;
+        color: #666;
+    }
+
+        .create-footer a {
+            margin-left: 5px;
+            color: #4e73df;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+            .create-footer a:hover {
+                text-decoration: underline;
+            }
+</style>
+
+<div class="create-wrapper">
+    <div class="create-card">
+        <h1>Create A New User</h1>
+        <hr />
+
+        <form asp-action="Create" asp-controller="SuperAdmin" enctype="multipart/form-data" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            @if (ViewBag.Message != null)
+            {
+                <div class="success-message">@ViewBag.Message</div>
+            }
+
+            <div class="form-group">
+                <label asp-for="FirstName" class="control-label"></label>
+                <input asp-for="FirstName" class="form-control" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LastName" class="control-label"></label>
+                <input asp-for="LastName" class="form-control" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Email" class="control-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="UserName" class="control-label"></label>
+                <input asp-for="UserName" class="form-control" />
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Address" class="control-label"></label>
+                <input asp-for="Address" class="form-control" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PhoneNumber" class="control-label"></label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password" class="control-label"></label>
+                <input asp-for="Password" class="form-control" type="password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <!-- Avatar upload -->
+            <div class="form-group">
+                <label>Avatar</label>
+                <input type="file" name="avatarFile" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Register" class="btn btn-primary" />
+            </div>
+
+            @Html.AntiForgeryToken()
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+        // Fade-in animation on page load
+        document.addEventListener("DOMContentLoaded", () => {
+            const card = document.querySelector(".create-card");
+            card.style.opacity = 0;
+            card.style.transform = "translateY(20px)";
+            setTimeout(() => {
+                card.style.transition = "all 0.6s ease";
+                card.style.opacity = 1;
+                card.style.transform = "translateY(0)";
+            }, 100);
+        });
+    </script>
+}

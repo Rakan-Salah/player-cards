@@ -1,0 +1,958 @@
+﻿@model List<PlayerCards.Models.PlayerCard>
+@using System.Security.Claims
+
+
+
+@{
+    // 1. Set the correct title
+    if (ViewData["Title"] == null) { ViewData["Title"] = "All Products"; }
+
+    // 2. Determine user roles
+    bool isAuthenticated = User.Identity.IsAuthenticated;
+    bool isSuperAdmin = User.IsInRole("SuperAdmin");
+    bool isRegularUser = isAuthenticated && User.IsInRole("User");
+
+    // Flag to control background and layout based on which view is loaded
+    string currentTitle = ViewData["Title"]?.ToString() ?? "All Products";
+    bool useFullEcommerceLayout = currentTitle == "All Products" ||
+                                  currentTitle == "My Wishlist" ||
+                                  currentTitle == "My Cart";
+
+    // Show e-commerce header if not SuperAdmin
+    bool showEcommerceHeader = !isSuperAdmin;
+}
+
+<style>
+    <style >
+    /* Add the FontAwesome link here, escaped for Razor */
+    @@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css');
+    /* --- GLOBAL STYLES & SETUP --- */
+    body {
+        background-color: #f8f8f8;
+        padding-top: @(isSuperAdmin ? "56px" : "0");
+        margin: 0;
+        font-family: 'Arial', sans-serif;
+    }
+
+    .content-wrapper {
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    /* --- STICKY HEADER --- */
+    .sticky-header-wrapper {
+        position: sticky;
+        top: 0;
+        z-index: 1020;
+        background-color: #fff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    /* --- 1. Top Header --- */
+    .e-header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 40px;
+        background-color: #ffffff;
+        border-bottom: 1px solid #eee;
+    }
+
+    .e-logo {
+        font-size: 24px;
+        font-weight: 900;
+        text-decoration: none;
+        color: #222;
+        letter-spacing: -1px;
+    }
+
+        .e-logo span {
+            color: #E83F6F;
+        }
+
+    .e-search-bar {
+        flex-grow: 1;
+        max-width: 450px;
+        margin: 0 30px;
+        position: relative;
+    }
+
+        .e-search-bar input {
+            width: 100%;
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .e-search-bar button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 14px;
+            color: #777;
+            cursor: pointer;
+        }
+
+    .e-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+        .e-header-actions a {
+            text-decoration: none;
+            color: #333;
+            font-size: 17px;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+            .e-header-actions a:hover {
+                color: #E83F6F;
+            }
+
+        .e-header-actions .badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #E83F6F;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+    /* --- 2. Main Navigation --- */
+    .e-main-nav {
+        padding: 0 40px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .e-nav-list {
+        display: flex;
+        justify-content: center;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+        .e-nav-list a {
+            display: block;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+            .e-nav-list a:hover {
+                color: #000;
+            }
+
+            .e-nav-list a.active {
+                color: #E83F6F;
+                border-bottom-color: #E83F6F;
+            }
+
+    /* --- 3. MEGA HERO BANNER --- */
+    .mega-hero-banner {
+        width: 100%;
+        height: 550px;
+        background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('/images/football-shirt-background.jpg') center center / cover no-repeat fixed;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 0 60px;
+        color: white;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .mega-hero-content {
+        max-width: 600px;
+    }
+
+        .mega-hero-content h1 {
+            font-size: 60px;
+            font-weight: 900;
+            margin: 0 0 10px 0;
+            line-height: 1.1;
+        }
+
+        .mega-hero-content p {
+            font-size: 20px;
+            font-weight: 300;
+            margin-bottom: 30px;
+        }
+
+        .mega-hero-content .e-hero-btn {
+            padding: 15px 35px;
+            font-size: 16px;
+            border-radius: 30px;
+            background-color: #E83F6F;
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: background-color 0.3s ease, transform 0.1s;
+        }
+
+            .mega-hero-content .e-hero-btn:hover {
+                background-color: #d73360;
+                transform: translateY(-2px);
+            }
+
+    /* --- 4. FEATURE BAR --- */
+    .e-features-bar {
+        display: flex;
+        justify-content: space-around;
+        gap: 1px;
+        background-color: #fff;
+        padding: 20px 40px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 40px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .e-feature-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        text-align: left;
+    }
+
+        .e-feature-item i {
+            font-size: 30px;
+            color: #222;
+        }
+
+        .e-feature-item h4 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .e-feature-item span {
+            font-size: 13px;
+            color: #777;
+        }
+
+    /* --- 5. DYNAMIC TEAM SHOWCASE SECTIONS --- */
+    .team-showcase-section {
+        padding: 60px 40px;
+        margin-bottom: 40px;
+        background-color: #fff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    }
+
+    .team-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+        .team-header h2 {
+            font-size: 36px;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin: 0;
+            color: #222;
+        }
+
+        .team-header p {
+            font-size: 16px;
+            color: #777;
+            margin-top: 5px;
+        }
+
+    .team-product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 30px;
+    }
+
+    .team-callout-card {
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .team-callout-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+
+    .team-callout-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 50%);
+        padding: 30px;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        z-index: 2;
+    }
+
+    .team-callout-card img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: top;
+        z-index: 1;
+        transition: transform 0.5s ease;
+    }
+
+    .team-callout-card:hover img {
+        transform: scale(1.05);
+    }
+
+    .team-callout-card h3 {
+        font-size: 28px;
+        margin: 0 0 5px 0;
+        z-index: 3;
+        font-weight: 700;
+    }
+
+    .team-callout-card .shop-link {
+        color: #E83F6F;
+        font-weight: 600;
+        text-decoration: none;
+        font-size: 15px;
+        display: inline-block;
+        margin-top: 10px;
+        z-index: 3;
+        position: relative;
+    }
+
+        .team-callout-card .shop-link i {
+            margin-left: 5px;
+        }
+
+    /* --- 6. FEATURED PRODUCTS SECTION (Four-Item Display & Carousel Fix) --- */
+    .e-product-section {
+        max-width: 1400px;
+        margin: 60px auto;
+        padding: 0 40px;
+    }
+
+        .e-product-section h2 {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+        }
+
+    /* Container to manage relative positioning for buttons */
+    .carousel-container {
+        position: relative;
+        padding: 0 50px; /* Space for the navigation buttons */
+    }
+
+    .card-carousel {
+        display: flex;
+        overflow-x: hidden;
+        scroll-behavior: smooth;
+        gap: 30px; /* Space between cards */
+        padding-bottom: 20px;
+    }
+
+        /* **CARD SIZE FIX: Set to 25% of container width** */
+        .card-carousel .player-card {
+            /* 25% width minus some space for the 30px gaps */
+            flex: 0 0 calc(25% - 22.5px);
+            min-width: calc(25% - 22.5px); /* Ensures consistent width */
+
+            position: relative;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: box-shadow 0.3s ease;
+        }
+
+    /* **CRITICAL IMAGE FIT FIX** (Highly specific to override conflicting styles) */
+    .player-card a {
+        display: block; /* Ensure the link behaves as a container */
+    }
+
+    .player-card .image-container {
+        position: relative;
+        width: 100%;
+        /* Creates a perfect square container (1:1 ratio) - IMPORTANT */
+        padding-top: 100% !important;
+        background-color: white;
+        overflow: hidden;
+        margin-bottom: 0 !important;
+    }
+
+        .player-card .image-container img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Force the image to shrink to fit entirely within the container - IMPORTANT */
+            object-fit: contain !important;
+            /* Padding provides the clean white margin inside the square container - IMPORTANT */
+            padding: 15px !important;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+    .player-card:hover .image-container img {
+        transform: scale(1.05);
+    }
+
+    .product-details {
+        padding: 15px 15px 20px 15px;
+        text-align: left;
+        border-top: 1px solid #f0f0f0;
+        min-height: 90px;
+    }
+
+        .product-details h4 {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0 0 5px 0;
+            line-height: 1.2;
+        }
+
+        .product-details .price {
+            font-size: 18px;
+            font-weight: 800;
+            color: #E83F6F;
+        }
+
+    /* Carousel Navigation Buttons */
+    .carousel-button {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid #ddd;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        text-align: center;
+        font-size: 20px;
+        cursor: pointer;
+        z-index: 10;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        transition: background 0.2s;
+    }
+
+    .prev-button {
+        left: 0;
+    }
+
+    .next-button {
+        right: 0;
+    }
+
+    /* Love Button & Tag Positioning */
+    .player-card .love-form {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        z-index: 6;
+    }
+
+    .player-card .product-custom-tag {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        left: auto;
+        background-color: #E83F6F;
+        color: white;
+        padding: 4px 8px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        border-radius: 4px;
+        z-index: 6;
+    }
+
+    /* Hide extraneous elements (kept from a prior step, just in case) */
+    .player-card .size-options,
+    .player-card .cart-form,
+    .player-card .quick-view-btn,
+    .player-card .card-actions {
+        display: none !important;
+    }
+
+    /* --- 7. FOOTER STYLES --- */
+    .e-footer {
+        width: 100%;
+        background-color: #f8f8f8;
+        border-top: 1px solid #ddd;
+        padding: 60px 40px 30px 40px;
+        color: #444;
+    }
+
+    .footer-content {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        gap: 30px;
+    }
+
+    .footer-column h5 {
+        font-size: 16px;
+        font-weight: 700;
+        color: #222;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+    }
+
+    .footer-column a {
+        display: block;
+        text-decoration: none;
+        color: #666;
+        padding: 5px 0;
+        font-size: 14px;
+    }
+
+        .footer-column a:hover {
+            color: #E83F6F;
+        }
+
+    .footer-bottom {
+        max-width: 1400px;
+        margin: 30px auto 0 auto;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+        text-align: center;
+        font-size: 12px;
+        color: #888;
+    }
+
+    .social-icons a {
+        color: #444;
+        font-size: 20px;
+        margin: 0 10px;
+        transition: color 0.3s;
+    }
+
+        .social-icons a:hover {
+            color: #E83F6F;
+        }
+
+    .player-card .admin-actions .btn {
+        padding: 6px 8px;
+        border-radius: 8px;
+        font-size: 13px;
+    }
+    /* --- Love Button Style Adjustments --- */
+    .player-card .love-btn {
+        /* Base style (gray outline) */
+        background: rgba(255, 255, 255, 0.85);
+        border: 1px solid #ccc;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        line-height: 35px;
+        text-align: center;
+        cursor: pointer;
+        font-size: 16px;
+        color: #555; /* Default heart color (outline) */
+        transition: all 0.2s ease;
+    }
+
+        /* 🎯 NEW: Style when the 'liked' class is present */
+        .player-card .love-btn.liked {
+            color: #E83F6F; /* **Vibrant Red/Pink for the heart** */
+            border-color: #E83F6F;
+            background: white;
+            /* Optionally, add a subtle shadow or transformation for pop */
+            box-shadow: 0 0 8px rgba(232, 63, 111, 0.5);
+            transform: scale(1.1);
+        }
+
+        /* Optional: Make the heart slightly bolder when hovered (if not liked) */
+        .player-card .love-btn:not(.liked):hover {
+            color: #E83F6F;
+        }
+</style>
+
+@if (!isSuperAdmin)
+{
+    <div class="sticky-header-wrapper">
+        <header class="e-header-top">
+            <a asp-action="Index" asp-controller="Home" class="e-logo">FOOTY<span>MERCH</span></a>
+
+            <div class="e-search-bar">
+                <input type="text" placeholder="Search for jerseys, clubs, or national teams...">
+                <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+
+            <div class="e-header-actions">
+            
+                @* The _LoginPartial handles the user icon/sign-in/sign-out dropdown *@
+                <partial name="_LoginPartial" />
+            </div>
+        </header>
+
+        <nav class="e-main-nav">
+            <ul class="e-nav-list">
+                <li>
+                    <a asp-action="Index" asp-controller="Home"
+                       asp-route-categoryId=""
+                       class="@(string.IsNullOrEmpty(ViewBag.SelectedCategory) ? "active" : "")">
+                        All Teams
+                    </a>
+                </li>
+
+                @if (ViewBag.Categories != null)
+                {
+                    @foreach (var category in (IEnumerable<SelectListItem>)ViewBag.Categories)
+                    {
+                        <li>
+                            <a asp-action="Index" asp-controller="Home"
+                               asp-route-categoryId="@category.Value"
+                               class="@(category.Value == ViewBag.SelectedCategory ? "active" : "")">
+                                @category.Text
+                            </a>
+                        </li>
+                    }
+                }
+                <li><a href="#product-list">New Kits</a></li>
+                <li><a href="#blog">Latest News</a></li>
+            </ul>
+        </nav>
+    </div> 
+}
+
+
+<main class="content-wrapper">
+
+    @if (currentTitle == "All Products" || currentTitle == "Products")
+    {
+        <section class="mega-hero-banner" id="new-kits">
+            <div class="mega-hero-content">
+                <h1>AUTHENTIC KITS GLOBAL TEAMS</h1>
+                <p>Shop the official merchandise of the world's greatest football clubs and national teams. New 2024/2025 season kits available now!</p>
+                <a href="#product-list" class="e-hero-btn">Explore The Store</a>
+            </div>
+        </section>
+
+        <section class="e-features-bar">
+            <div class="e-feature-item">
+                <i class="fa-solid fa-shield-halved"></i>
+                <div>
+                    <h4>SECURE PAYMENTS</h4>
+                    <span>Safe & Encrypted Checkout</span>
+                </div>
+            </div>
+            <div class="e-feature-item">
+                <i class="fa-solid fa-gem"></i>
+                <div>
+                    <h4>OFFICIAL MERCH</h4>
+                    <span>100% Authentic Guaranteed</span>
+                </div>
+            </div>
+            <div class="e-feature-item">
+                <i class="fa-solid fa-truck-fast"></i>
+                <div>
+                    <h4>GLOBAL DELIVERY</h4>
+                    <span>Fast shipping on all orders</span>
+                </div>
+            </div>
+            <div class="e-feature-item">
+                <i class="fa-solid fa-headset"></i>
+                <div>
+                    <h4>24/7 SUPPORT</h4>
+                    <span>We are always here to help</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="team-showcase-section" id="barcelona-shop">
+            <div class="team-header">
+                <h2 style="color: #A50044;">FC BARCELONA SHOP</h2>
+                <p>Més que un club</p>
+            </div>
+
+            <div class="team-product-grid">
+
+                @* Card 1: New Kit *@
+                <a href="/Product/Detail/100" class="team-callout-card">
+                    <img src="~/images/FCB_ED_Lamine_Merch2_4x5_1.webp" alt="Barcelona Home Kit" />
+                    <div class="team-callout-overlay">
+                        <h3>FC BARCALONA X ED SHEERAN</h3>
+                    </div>
+                </a>
+
+                @* Card 2: Men's Wear *@
+                <a href="/Product/Detail/101" class="team-callout-card">
+                    <img src="~/images/VO251002A61504_med.webp" alt="Barcelona Training Gear" />
+                    <div class="team-callout-overlay">
+                        <h3>MEN'S KITS</h3>
+                    </div>
+                </a>
+
+                @* Card 3: Kids Wear *@
+                <a href="/Product/Detail/102" class="team-callout-card">
+                    <img src="~/images/BARC_A_KIDS_C1_LK_07_2559.webp" alt="Barcelona Scarves" />
+                    <div class="team-callout-overlay">
+                        <h3>KIDS KITS</h3>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <section class="team-showcase-section" id="madrid-shop">
+            <div class="team-header">
+                <h2 style="color: #005694;">REAL MADRID SHOP</h2>
+                <p>Hala Madrid y nada más</p>
+            </div>
+
+            <div class="team-product-grid">
+
+                @* Card 1: New Kit *@
+                <a href="/Product/Detail/200" class="team-callout-card">
+                    <img src="~/images/D-BELLINGHAM__1_.webp" alt="Real Madrid Home Kit" />
+                    <div class="team-callout-overlay">
+                        <h3>HOME KIT 25/26</h3>
+                    </div>
+                </a>
+
+                @* Card 2: Retro Jerseys *@
+                <a href="/Product/Detail/201" class="team-callout-card">
+                    <img src="~/images/maillots-real-madrid-retro-vintage.jpg" alt="Real Madrid Retro" />
+                    <div class="team-callout-overlay">
+                        <h3>Vintage & Retro</h3>
+                    </div>
+                </a>
+
+                @* Card 3: Goalkeeper Kits *@
+                <a href="/Product/Detail/202" class="team-callout-card">
+                    <img src="~/images/D-GK.webp" alt="Real Madrid Goalkeeper" />
+                    <div class="team-callout-overlay">
+                        <h3>Goalkeeper Gear</h3>
+                    </div>
+                </a>
+            </div>
+        </section>
+    }
+
+    <section class="e-product-section" id="product-list">
+        <h2>Featured Items</h2>
+
+        <div class="carousel-container">
+
+            <div class="carousel-button prev-button" onclick="scrollCarousel(-1)">
+                <i class="fa-solid fa-chevron-left"></i>
+            </div>
+            <div class="carousel-button next-button" onclick="scrollCarousel(1)">
+                <i class="fa-solid fa-chevron-right"></i>
+            </div>
+
+            <div class="card-carousel" id="featuredCarousel">
+                @if (Model != null && Model.Any())
+                {
+                    // Pass SuperAdmin info to the partial view
+                    ViewData["IsSuperAdmin"] = isSuperAdmin;
+
+                    @foreach (var card in Model.Take(12)) // Limit to 12 items in the carousel
+                    {
+                        @await Html.PartialAsync("_PlayerCardCarouselItem", card, new ViewDataDictionary(ViewData))
+                    }
+                }
+                else
+                {
+                    <div class="no-results" style="min-width:100%; text-align:center; padding:50px;">
+                        <p>No featured products found yet.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+
+    <footer class="e-footer">
+        <div class="footer-content">
+            <div class="footer-column">
+                <h5>Customer Service</h5>
+                <ul>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Returns & Refunds</a></li>
+                    <li><a href="#">Shipping Information</a></li>
+                    <li><a href="#">FAQs</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h5>Shop</h5>
+                <ul>
+                    <li><a href="#">New Arrivals</a></li>
+                    <li><a href="#">Jerseys</a></li>
+                    <li><a href="#">Training Gear</a></li>
+                    <li><a href="#">Accessories</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h5>About FootyMerch</h5>
+                <ul>
+                    <li><a href="#">Our Story</a></li>
+                    <li><a href="#">Official Licenses</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h5>Follow Us</h5>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; @DateTime.Now.Year FootyMerch Store. All Rights Reserved.
+        </div>
+    </footer>
+</main>
+
+
+
+@section Scripts {
+    <script>
+        // Global function for carousel scrolling
+        function scrollCarousel(direction) {
+            const carousel = document.getElementById('featuredCarousel');
+
+            if (carousel) {
+                const firstCard = carousel.querySelector('.player-card');
+                let scrollAmount = carousel.clientWidth / 4; // Default scroll distance
+
+                if (firstCard) {
+                     const cardWidth = firstCard.offsetWidth;
+                     const gap = 30; // Matches your CSS gap
+                     scrollAmount = cardWidth + gap;
+                }
+
+                const newScrollLeft = carousel.scrollLeft + (direction * scrollAmount);
+
+                carousel.scrollTo({
+                    left: newScrollLeft,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        // Wait for the full page to load before attaching event listeners
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const container = document.getElementById('featuredCarousel');
+
+            // 🎯 CRITICAL FIX: Change listener from 'submit' (which only fires on <form>) to 'click'
+            // and use e.target.closest() to find the correct button/form.
+            if (container) {
+                container.addEventListener('click', function(e) {
+
+                    // Use closest() to check if the clicked element is a love-btn
+                    const button = e.target.closest('.love-btn');
+
+                    // --- 1. WISHLIST / LOVE BUTTON LOGIC ---
+                    if (button) {
+                        e.preventDefault(); // Stop the form submission
+
+                        const form = button.closest('.love-form');
+
+                        if (!form) return; // Should not happen, but safe guard
+
+                        const cardId = form.dataset.id;
+                        const tokenInput = form.querySelector('input[name="__RequestVerificationToken"]');
+
+                        if (!tokenInput) {
+                            console.error("Anti-forgery token not found in love-form.");
+                            return;
+                        }
+
+                        const token = tokenInput.value;
+
+                        // Add a temporary loading/disabled state to prevent double-click
+                        button.disabled = true;
+
+                        fetch(`/Home/Love/${cardId}`, {
+                            method: 'POST',
+                            headers: {
+                                'RequestVerificationToken': token,
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                        .then(response => {
+                            button.disabled = false; // Re-enable button
+                            if (response.ok) {
+                                return response.json();
+                            } else if (response.status === 401) {
+                                alert("Please log in to like this item.");
+                                throw new Error('Unauthorized'); // Stop further processing
+                            } else {
+                                throw new Error(`Server responded with status: ${response.status}`);
+                            }
+                        })
+                        .then(data => {
+                            if (data && data.liked) {
+                                // Successful Like
+                                button.classList.add('liked');
+                                button.title = "Unlike";
+                            } else if (data && data.liked === false) {
+                                // Successful Unlike
+                                button.classList.remove('liked');
+                                button.title = "Like";
+                            }
+                        })
+                        .catch(error => {
+                            console.error('AJAX Error:', error);
+                            // Only show a generic alert if it wasn't the 401 error
+                            if (error.message !== 'Unauthorized') {
+                                alert(`Error processing request: ${error.message}`);
+                            }
+                        });
+                    }
+
+                    // --- 2. ADD TO CART BUTTON LOGIC ---
+                    // This section should also be updated to listen for a click event,
+                    // but since the original was hidden, you may address this later
+                    /*
+                    const cartButton = e.target.closest('.cart-form button'); // Assuming a button inside a cart-form
+                    if (cartButton && cartButton.closest('.cart-form')) {
+                         e.preventDefault();
+                         // Your original cart logic here...
+                    }
+                    */
+
+                }); // End of click event listener
+            } // End of if(container)
+
+        }); // End of DOMContentLoaded
+    </script>
+}

@@ -1,0 +1,270 @@
+﻿@model PlayerCards.Models.PlayerCard
+@{
+    bool isSuperAdmin = ViewBag.IsSuperAdmin ?? false;
+}
+
+<div class="player-card">
+
+    <div class="image-container">
+        @if (User.Identity.IsAuthenticated && User.IsInRole("User"))
+        {
+            <form class="love-form" data-id="@Model.Id" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit"
+                        title="@(Model.Isliked ? "Unlike" : "Like")"
+                        class="icon-btn love @(Model.Isliked ? "liked" : "")">
+                    <i class="fa-solid fa-heart"></i>
+                </button>
+            </form>
+        }
+
+        @if (isSuperAdmin)
+        {
+            <a asp-action="Create" asp-controller="Home" asp-route-id="@Model.Id" class="icon-btn admin-edit" title="Edit">
+                <i class="fa-solid fa-pencil"></i>
+            </a>
+        }
+
+        @if (!string.IsNullOrEmpty(Model.ImagePath))
+        {
+            <img src="@Model.ImagePath" alt="@Model.Name" />
+        }
+        else
+        {
+            <img src="https://via.placeholder.com/300x400.png?text=No+Image" alt="No Image" />
+        }
+    </div>
+
+    <div class="product-info">
+        @if (Model.Tags?.Any() == true)
+        {
+            <div class="player-tags">
+                @foreach (var tag in Model.Tags.Take(2)) // Show max 2 tags
+                {
+                    <span class="tag-badge">@tag.Name</span>
+                }
+            </div>
+        }
+
+        <h3>@Model.Name</h3>
+        <p class="price">@Model.Price JD</p>
+    </div>
+
+    <div classs="actions">
+        @if (User.Identity.IsAuthenticated && User.IsInRole("User"))
+        {
+            <form class="cart-form" data-id="@Model.Id" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit"
+                        class="cart-btn @(Model.IsInCart ? "in-cart" : "")"
+                        @(Model.IsInCart ? "disabled" : "")>
+                    <i class="fa-solid @(Model.IsInCart ? "fa-check" : "fa-cart-shopping")"></i>
+                    <span>@(Model.IsInCart ? " In Cart" : " Add to Cart")</span>
+                </button>
+            </form>
+        }
+
+        @if (isSuperAdmin)
+        {
+            <button type="button" class="cart-btn" disabled>Admin View</button>
+        }
+
+        @if (isSuperAdmin)
+        {
+            <form asp-action="Delete" asp-controller="Home" method="post" class="delete-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="icon-btn delete" title="Delete" onclick="return confirm('Are you sure you want to delete this product?');">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </form>
+        }
+    </div>
+</div>
+
+<style>
+    .player-card {
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        text-align: left;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        display: flex;
+        flex-direction: column;
+    }
+
+        .player-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+        }
+
+    /* --- Image Container --- */
+    .image-container {
+        position: relative;
+        width: 100%;
+        /* Modern 4:5 aspect ratio */
+        aspect-ratio: 4 / 5;
+    }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    /* --- Info Container --- */
+    .product-info {
+        padding: 16px 20px;
+        flex-grow: 1;
+    }
+
+        .product-info h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 8px;
+            color: #222;
+            /* Truncate long names */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+    .price {
+        font-size: 20px;
+        font-weight: 700;
+        color: #E83F6F; /* Accent color */
+        margin: 0;
+    }
+
+    /* --- Tags --- */
+    .player-tags {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+
+    .tag-badge {
+        background-color: #f3f4f6;
+        color: #444;
+        padding: 4px 10px;
+        border-radius: 14px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    /* --- Actions Bar --- */
+    .actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        padding: 0px 20px 20px;
+    }
+
+    /* --- Add to Cart Button --- */
+    .cart-btn {
+        flex-grow: 1; /* Takes up available space */
+        background-color: #333;
+        color: white;
+        border: none;
+        padding: 12px 15px;
+        font-size: 15px;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .cart-btn:hover:not(:disabled) {
+            background-color: #000;
+        }
+        /* In Cart State */
+        .cart-btn.in-cart,
+        .cart-btn:disabled {
+            background-color: #28a745;
+            color: white;
+            cursor: not-allowed;
+        }
+        /* Disabled admin button */
+        .cart-btn:disabled {
+            background-color: #6c757d;
+            opacity: 0.7;
+        }
+
+
+    /* --- Icon-Only Buttons (Like, Edit, Delete) --- */
+    .icon-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 8px;
+        border-radius: 50%;
+        width: 38px;
+        height: 38px;
+        transition: all .2s ease;
+        z-index: 10;
+        color: #555;
+    }
+
+        .icon-btn:hover {
+            background-color: rgba(255, 255, 255, 0.8);
+            color: #000;
+        }
+
+    /* --- Like Button (on image) --- */
+    .love-form {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 10;
+    }
+
+    .icon-btn.love {
+        background-color: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(3px);
+        color: #555;
+    }
+
+        .icon-btn.love.liked {
+            color: #E83F6F; /* Red when liked */
+        }
+
+        .icon-btn.love:hover {
+            transform: scale(1.1);
+        }
+
+    /* --- Admin Edit Button (on image) --- */
+    .admin-edit {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        z-index: 10;
+        background-color: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(3px);
+        color: #007bff;
+        display: flex; /* Fix for <a> tag */
+        align-items: center;
+        justify-content: center;
+    }
+
+        .admin-edit:hover {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+    /* --- Admin Delete Button (in actions) --- */
+    .delete-form {
+        flex-shrink: 0; /* Prevents button from shrinking */
+    }
+
+    .icon-btn.delete {
+        color: #dc3545;
+    }
+
+        .icon-btn.delete:hover {
+            background-color: #dc3545;
+            color: white;
+        }
+</style>

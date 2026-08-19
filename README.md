@@ -34,23 +34,6 @@ A full-stack **ASP.NET Core MVC** web application for a football (soccer) mercha
 
 ---
 
-##  Project Structure
-
-PlayerCards/
-├── Controllers/        # MVC controllers (Home, Account, SuperAdmin, Category, User, Admin, Language)
-├── Data/               # AppDbContext (EF Core)
-├── Entities/           # Domain entities (UserAccount, PlayerCard, CartItem, etc.)
-├── Models/             # View models
-├── Views/              # Razor views
-├── Services/           # Email sender and other services
-├── Middleware/         # Custom file-validation middleware
-├── Languages/          # Localization resources (EN / AR)
-├── wwwroot/            # Static assets (css, js, images)
-└── Program.cs          # App startup & configuration
-
-
----
-
 ##  Notes on This Build
 
 This is a **portfolio-oriented version** of the application:

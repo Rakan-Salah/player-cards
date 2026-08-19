@@ -1,6 +1,10 @@
 # PlayerCards 
 
 A full-stack **ASP.NET Core MVC** web application for a football (soccer) merchandise store, featuring a complete customer facing storefront and a powerful multi-role administration panel. Built with C#, Entity Framework Core, and Bootstrap, with full English/Arabic localization.
+---
+
+## Live Demo
+View the application here: https://player-cards-proj.vercel.app/
 
 ---
 

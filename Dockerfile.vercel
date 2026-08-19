@@ -1,0 +1,19 @@
+# ---- Build stage ----
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy everything and restore/publish
+COPY . .
+RUN dotnet restore "PlayerCards.csproj"
+RUN dotnet publish "PlayerCards.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+# ---- Runtime stage ----
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+
+# Vercel provides the port via $PORT (defaults to 80). Kestrel is told to bind
+# to it in Program.cs, but we expose 80 as the sensible default here.
+EXPOSE 80
+
+ENTRYPOINT ["dotnet", "PlayerCards.dll"]

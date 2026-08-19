@@ -11,6 +11,14 @@ using PlayerCards.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Bind to the port Vercel (or any container host) provides via $PORT.
+// Falls back to the default dev behaviour when PORT is not set (local runs).
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+{
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}
+
 // Add Localization
 builder.Services.AddLocalization(options => options.ResourcesPath = "Languages");
 
@@ -85,7 +93,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// NOTE: HTTPS redirection is intentionally disabled. On Vercel/containers TLS is
+// terminated by the platform proxy, so forcing an in-app HTTPS redirect can cause
+// redirect loops. Enable it only if you run behind your own HTTPS Kestrel setup.
+// app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 app.UseFileValidation(); // Custom middleware to validate uploaded files
 app.UseRouting();
